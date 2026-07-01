@@ -1,0 +1,12 @@
+/vendor/
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/views/
+/node_modules/
+/.env
+/.env.backup
+/.idea/
+*.swp
+*.swo
+*~
+.DS_Store
