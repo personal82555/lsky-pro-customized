@@ -153,8 +153,6 @@ class Image extends Model
             $builder->where('origin_name', 'like', "%{$keyword}%")->orWhere('alias_name', 'like', "%{$keyword}%");
         })->when((int) $request->query('album_id'), function (Builder $builder, $albumId) {
             $builder->where('album_id', $albumId);
-        }, function (Builder $builder) {
-            $builder->whereNull('album_id');
         });
     }
 
