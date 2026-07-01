@@ -299,19 +299,7 @@
                         // Reinitialize Viewer for new images
                         if (viewer) viewer.destroy();
                         viewer = new Viewer(document.getElementById('images-grid'), {url: 'data-original'});
-                        // Reinitialize DragSelect for new images
-                        try { ds.reset(); } catch(e) {} // reset previous instance
-                        ds = new DragSelect({
-                            area: $(IMAGES_SCROLL).get(0),
-                            selectableClass: 'images-item',
-                            keyboardDrag: false,
-                        });
-                        ds.addSelectionCallback(bindOperates);
-                        ds.addCallback((items) => {
-                            if (!items.length) {
-                                $headerTitle.text('我的图片');
-                            }
-                        });
+                        // DragSelect auto-detects new elements via event delegation
                     } else {
                         $photos.justifiedGallery('norewind');
                     }
@@ -489,8 +477,22 @@
         <script>
             const ds = new DragSelect({
                 area: $(IMAGES_SCROLL).get(0),
-                selectableClass: 'images-item',
                 keyboardDrag: false,
+            });
+            // Event delegation: click on image to view, click selector to select
+            $(IMAGES_SCROLL).on('click', '.images-item', function(e) {
+                // If click is on the selector checkbox area, let DragSelect handle it
+                if ($(e.target).closest('.image-selector').length) return;
+                // Otherwise, open the image in Viewer
+                let json = $(this).data('json');
+                if (json && json.links && json.links.url) {
+                    window.open(json.links.url, '_blank');
+                }
+            });
+            $(IMAGES_SCROLL).on('click', '.image-selector', function(e) {
+                e.stopPropagation();
+                let $item = $(this).closest('.images-item');
+                ds.toggleSelect($item.get(0));
             });
 
             const bindOperates = () => {
