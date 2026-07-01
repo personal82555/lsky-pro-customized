@@ -238,7 +238,7 @@
             const $photos = $(IMAGES_GRID);
             const $drawer = $("#drawer");
             const $drawerMask = $('#drawer-mask');
-            const viewer = new Viewer(document.getElementById('images-grid'), {url: 'data-original'});
+            let viewer = new Viewer(document.getElementById('images-grid'), {url: 'data-original'});
             const drawer = {
                 open(title, content, callback) {
                     $drawerMask.fadeIn();
@@ -296,6 +296,22 @@
                     if (galleryNeedsInit) {
                         $photos.justifiedGallery(gridConfigs);
                         galleryNeedsInit = false;
+                        // Reinitialize Viewer for new images
+                        if (viewer) viewer.destroy();
+                        viewer = new Viewer(document.getElementById('images-grid'), {url: 'data-original'});
+                        // Reinitialize DragSelect for new images
+                        try { ds.reset(); } catch(e) {} // reset previous instance
+                        ds = new DragSelect({
+                            area: $(IMAGES_SCROLL).get(0),
+                            selectableClass: 'images-item',
+                            keyboardDrag: false,
+                        });
+                        ds.addSelectionCallback(bindOperates);
+                        ds.addCallback((items) => {
+                            if (!items.length) {
+                                $headerTitle.text('我的图片');
+                            }
+                        });
                     } else {
                         $photos.justifiedGallery('norewind');
                     }
@@ -473,6 +489,7 @@
         <script>
             const ds = new DragSelect({
                 area: $(IMAGES_SCROLL).get(0),
+                selectableClass: 'images-item',
                 keyboardDrag: false,
             });
 
