@@ -4,6 +4,15 @@
     <link rel="stylesheet" href="{{ asset('css/justified-gallery/justifiedGallery.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/viewer-js/viewer.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/context-js/context-js.css') }}">
+    <style>
+        /* Make image selector always visible for easier selection */
+        #images-grid .images-item .image-selector { display: block !important; }
+        #images-grid .images-item:hover { outline-color: #3b82f6; }
+        #images-grid .images-item.ds-selected { outline-color: #3b82f6; }
+        #images-grid .images-item .image-selector i { transition: all 0.15s; }
+        #images-grid .images-item:hover .image-selector i,
+        #images-grid .images-item.ds-selected .image-selector i { border-color: #fff; color: #0061ff; }
+    </style>
 @endpush
 
 <x-app-layout>
@@ -479,14 +488,16 @@
                 area: $(IMAGES_SCROLL).get(0),
                 keyboardDrag: false,
             });
-            // Event delegation: click on image to view, click selector to select
+            // Event delegation: click image → show in Viewer
             $(IMAGES_SCROLL).on('click', '.images-item', function(e) {
-                // If click is on the selector checkbox area, let DragSelect handle it
                 if ($(e.target).closest('.image-selector').length) return;
-                // Otherwise, open the image in Viewer
-                let json = $(this).data('json');
-                if (json && json.links && json.links.url) {
-                    window.open(json.links.url, '_blank');
+                e.preventDefault();
+                let $item = $(this);
+                let $items = $('#images-grid .images-item');
+                let idx = $items.index($item);
+                if (viewer) {
+                    try { viewer.view(idx); } catch(err) {}
+                    viewer.show();
                 }
             });
             $(IMAGES_SCROLL).on('click', '.image-selector', function(e) {
