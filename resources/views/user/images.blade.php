@@ -9,7 +9,6 @@
 <x-app-layout>
     <div class="relative flex justify-between items-center px-2 py-2 z-[3] top-0 left-0 right-0 bg-white border-solid border-b">
         <div class="space-x-2 flex justify-between items-center">
-            <a class="text-sm py-2 px-3 hover:bg-gray-100 rounded text-gray-800" href="javascript:getAlbums()"><i class="fas fa-bars text-blue-500"></i> 相册</a>
             <div class="flex-row hidden lg:flex">
                 <a data-operate="movements" class="hidden text-sm py-2 px-3 hover:bg-gray-100 rounded text-gray-800" href="javascript:void(0)">移动到相册</a>
                 <a data-operate="remove" class="hidden text-sm py-2 px-3 hover:bg-gray-100 rounded text-gray-800" href="javascript:void(0)">移出当前相册</a>
@@ -76,19 +75,36 @@
             </x-dropdown>
         </div>
     </div>
-    <div class="relative inset-0 h-full overflow-hidden">
-        <!-- content -->
-        <div id="images-scroll" class="absolute inset-0 overflow-y-scroll dragselect select-none">
-            <div id="images-grid" class="dragselect"></div>
-        </div>
-        <!-- right drawer -->
-        <div id="drawer-mask" class="absolute hidden inset-0 bg-gray-500 bg-opacity-50 z-[2]" onclick="drawer.close()"></div>
-        <div id="drawer" class="absolute bg-white w-64 md:w-72 top-0 -right-[1000px] bottom-0 z-[2] flex flex-col transition-all duration-300">
-            <div class="flex justify-between items-center text-md px-3 py-1 border-b">
-                <span class="text-gray-600 truncate" id="drawer-title"></span>
-                <a href="javascript:drawer.close()" class="p-2"><i class="fas fa-times text-blue-500"></i></a>
+    <div class="relative inset-0 h-full overflow-hidden flex">
+        <!-- 左侧相册列表 -->
+        <div id="albums-sidebar" class="w-48 md:w-56 bg-gray-50 border-r border-gray-200 flex-shrink-0 flex flex-col h-full overflow-hidden">
+            <div class="px-3 py-2 border-b border-gray-200 bg-white flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700">相册</span>
+                <a href="javascript:void(0)" onclick="$('#album-add').toggleClass('hidden')" class="text-blue-500 hover:text-blue-600">
+                    <i class="fas fa-plus text-sm"></i>
+                </a>
             </div>
-            <div id="drawer-content" class="overflow-y-auto"></div>
+            <div id="albums-list" class="flex-1 overflow-y-auto p-2 space-y-1">
+                <!-- 相册列表将通过JS动态加载 -->
+                <div class="text-center text-gray-400 py-4 text-sm">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 右侧图片区域 -->
+        <div class="flex-1 relative">
+            <!-- content -->
+            <div id="images-scroll" class="absolute inset-0 overflow-y-scroll dragselect select-none">
+                <div id="images-grid" class="dragselect"></div>
+            </div>
+            <!-- right drawer -->
+            <div id="drawer-mask" class="absolute hidden inset-0 bg-gray-500 bg-opacity-50 z-[2]" onclick="drawer.close()"></div>
+            <div id="drawer" class="absolute bg-white w-64 md:w-72 top-0 -right-[1000px] bottom-0 z-[2] flex flex-col transition-all duration-300">
+                <div class="flex justify-between items-center text-md px-3 py-1 border-b">
+                    <span class="text-gray-600 truncate" id="drawer-title"></span>
+                    <a href="javascript:drawer.close()" class="p-2"><i class="fas fa-times text-blue-500"></i></a>
+                </div>
+                <div id="drawer-content" class="overflow-y-auto"></div>
+            </div>
         </div>
     </div>
 
@@ -109,37 +125,41 @@
         </a>
     </script>
 
-    <script type="text/html" id="albums-container-tpl">
-        <div id="albums-container" class="flex flex-col justify-center items-center w-full p-3 space-y-2">
-            <div id="album-add" class="flex flex-col w-full hidden border rounded p-2">
-                <p class="error-message text-white p-2 mb-2 text-sm bg-red-500 rounded hidden"></p>
-                <form class="w-full space-y-2" action="/user/albums">
-                    <input type="text" class="w-full rounded px-2.5 py-1.5 text-sm border-0 bg-gray-200" name="name" placeholder="请输入名称">
-                    <textarea class="w-full resize-y rounded-md text-sm border-0 bg-gray-200" name="intro" placeholder="请输入简介"></textarea>
-                    <button class="w-full py-1 px-2 bg-indigo-500 text-white text-sm text-center tracking-wider font-semibold rounded-md">创建相册</button>
-                </form>
-            </div>
+    <script type="text/html" id="album-add-tpl">
+        <div id="album-add" class="flex flex-col w-full hidden border rounded p-2 bg-white mb-2">
+            <p class="error-message text-white p-2 mb-2 text-sm bg-red-500 rounded hidden"></p>
+            <form class="w-full space-y-2" action="/user/albums">
+                <input type="text" class="w-full rounded px-2.5 py-1.5 text-sm border-0 bg-gray-200" name="name" placeholder="请输入名称">
+                <textarea class="w-full resize-y rounded-md text-sm border-0 bg-gray-200" name="intro" placeholder="请输入简介"></textarea>
+                <div class="flex space-x-2">
+                    <button type="submit" class="flex-1 py-1 px-2 bg-indigo-500 text-white text-sm text-center tracking-wider font-semibold rounded-md">创建</button>
+                    <button type="button" onclick="$('#album-add').addClass('hidden')" class="py-1 px-2 bg-gray-300 text-gray-700 text-sm rounded-md">取消</button>
+                </div>
+            </form>
         </div>
     </script>
 
     <script type="text/html" id="albums-item-tpl">
-        <a href="javascript:void(0)" data-id="__id__" data-json='__json__' title="__intro__" class="albums-item flex justify-between items-center group px-2 h-7 rounded w-full bg-gray-100 text-gray-800 hover:bg-blue-300 hover:text-white">
-            <span class="text-sm truncate w-[80%] name">__name__</span>
+        <a href="javascript:void(0)" data-id="__id__" data-json='__json__' title="__intro__" class="albums-item flex justify-between items-center group px-2 h-8 rounded w-full text-gray-700 hover:bg-blue-100 cursor-pointer">
+            <span class="text-sm truncate w-[70%] name">__name__</span>
             <div class="flex items-center justify-center space-x-1 hidden group-hover:block">
-                <span class="update"><i class="fas fa-edit text-xs"></i></span>
-                <span class="delete"><i class="fas fa-trash-alt text-xs text-red-400"></i></span>
+                <span class="update text-gray-500 hover:text-blue-500"><i class="fas fa-edit text-xs"></i></span>
+                <span class="delete text-gray-500 hover:text-red-500"><i class="fas fa-trash-alt text-xs"></i></span>
             </div>
-            <span class="group-hover:hidden text-xs">__image_num__</span>
+            <span class="group-hover:hidden text-xs text-gray-400">__image_num__</span>
         </a>
     </script>
 
     <script type="text/html" id="album-update-tpl">
-        <div id="album-edit" data-id="__id__" class="flex flex-col w-full border rounded p-2">
+        <div id="album-edit" data-id="__id__" class="flex flex-col w-full border rounded p-2 bg-white mb-2">
             <p class="error-message text-white p-2 mb-2 text-sm bg-red-500 rounded hidden"></p>
             <form class="w-full space-y-2" action="/user/albums/__id__">
                 <input type="text" class="w-full rounded px-2.5 py-1.5 text-sm border-0 bg-gray-200" placeholder="请输入名称" name="name" value="__name__">
                 <textarea class="w-full resize-y rounded-md text-sm border-0 bg-gray-200" name="intro" placeholder="请输入简介">__intro__</textarea>
-                <button class="w-full py-1 px-2 bg-indigo-500 text-white text-sm text-center tracking-wider font-semibold rounded-md">确认修改</button>
+                <div class="flex space-x-2">
+                    <button type="submit" class="flex-1 py-1 px-2 bg-indigo-500 text-white text-sm text-center tracking-wider font-semibold rounded-md">确认</button>
+                    <button type="button" onclick="$(this).closest('#album-edit').remove()" class="py-1 px-2 bg-gray-300 text-gray-700 text-sm rounded-md">取消</button>
+                </div>
             </form>
         </div>
     </script>
@@ -159,67 +179,60 @@
                 <p class="my-2 break-words text-gray-600">__filename__</p>
             </div>
             <div>
-                <div class="text-sm font-semibold">图片原始名称</div>
-                <p class="my-2 break-words text-gray-600">__origin_name__</p>
+                <div class="text-sm font-semibold">链接</div>
+                <div class="my-2 p-2 bg-gray-100 rounded">
+                    <div class="space-y-1">
+                        <div>
+                            <span class="text-xs text-gray-500">直链</span>
+                            <p class="text-xs text-blue-500 truncate">__url__</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500">Markdown</span>
+                            <p class="text-xs text-gray-600 break-all">__markdown__</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500">HTML</span>
+                            <p class="text-xs text-gray-600 break-all">__html__</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500">BBCode</span>
+                            <p class="text-xs text-gray-600 break-all">__bbcode__</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500">缩略图</span>
+                            <p class="text-xs text-blue-500 truncate">__thumb_url__</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-                <div class="text-sm font-semibold">图片大小</div>
-                <p class="my-2 break-words text-gray-600">__size__</p>
+            <div class="flex justify-between text-sm text-gray-500">
+                <span>尺寸：__width__ x __height__</span>
+                <span>大小：__size__</span>
             </div>
-            <div>
-                <div class="text-sm font-semibold">图片类型</div>
-                <p class="my-2 break-words text-gray-600">__mimetype__</p>
-            </div>
-            <div>
-                <div class="text-sm font-semibold">尺寸</div>
-                <p class="my-2 break-words text-gray-600">__width__ * __height__</p>
-            </div>
-            <div>
-                <div class="text-sm font-semibold">MD5</div>
-                <p class="my-2 break-words text-gray-600">__md5__</p>
-            </div>
-            <div>
-                <div class="text-sm font-semibold">SHA-128</div>
-                <p class="my-2 break-words text-gray-600">__sha1__</p>
-            </div>
-            <div>
-                <div class="text-sm font-semibold">权限</div>
-                <p class="my-2 break-words text-gray-600">__permission__</p>
-            </div>
-            <div>
-                <div class="text-sm font-semibold">上传 IP</div>
-                <p class="my-2 break-words text-gray-600">__uploaded_ip__</p>
-            </div>
-            <div>
-                <div class="text-sm font-semibold">上传时间</div>
-                <p class="my-2 break-words text-gray-600">__created_at__</p>
-            </div>
+            <div class="text-sm text-gray-500">上传时间：__date__</div>
         </div>
     </script>
 
     @push('scripts')
         <script src="{{ asset('js/justified-gallery/jquery.justifiedGallery.min.js') }}"></script>
-        <script src="{{ asset('js/viewer-js/viewer.min.js') }}"></script>
         <script src="{{ asset('js/dragselect/ds.min.js') }}"></script>
+        <script src="{{ asset('js/viewer-js/viewer.min.js') }}"></script>
         <script src="{{ asset('js/context-js/context-js.js') }}"></script>
-        <script src="{{ asset('js/clipboard/index.browser.js') }}"></script>
-        <script src="{{ asset('js/clipboard/clipboard.min.js') }}"></script>
         <script>
-            let gridConfigs = {
-                rowHeight: 180,
-                margins: 16,
-                captions: false,
-                border: 10,
-                waitThumbnailsLoad: false,
-            };
-
-            let selectedAlbum = {}; // 选择的相册
-
-            const HEADER_TITLE = '#header-title';
             const IMAGES_SCROLL = '#images-scroll';
             const IMAGES_GRID = '#images-grid';
             const IMAGES_ITEM = '.images-item';
             const ALBUM_ITEM = '.albums-item';
+            const HEADER_TITLE = '#header-title';
+
+            const gridConfigs = {
+                rowHeight: 180,
+                maxRowHeight: 360,
+                margins: 8,
+                lastRow: 'nojustify',
+                justifyThreshold: 0.9,
+                cssAnimation: true
+            };
 
             const $headerTitle = $(HEADER_TITLE);
             const $photos = $(IMAGES_GRID);
@@ -237,7 +250,6 @@
                 close(callback) {
                     $drawerMask.fadeOut();
                     $drawer.css('right', '-1000px');
-                    albumsInfinite && albumsInfinite.destroy();
                     callback && callback();
                 },
                 toggle(title, content, callback) {
@@ -267,182 +279,173 @@
 
                     let html = '';
                     for (const i in images) {
-                        html += $('#images-item-tpl').html()
+                        let item = $('#images-item-tpl').html()
                             .replace(/__id__/g, images[i].id)
-                            .replace(/__name__/g, images[i].filename.replace(/\$/g, '$$$$'))
-                            .replace(/__human_date__/g, images[i].human_date)
-                            .replace(/__date__/g, images[i].date)
                             .replace(/__url__/g, images[i].url)
                             .replace(/__thumb_url__/g, images[i].thumb_url)
                             .replace(/__width__/g, images[i].width)
                             .replace(/__height__/g, images[i].height)
-                            .replace(/__json__/g, JSON.stringify(images[i]).replace(/\$/g, '$$$$'))
+                            .replace(/__name__/g, images[i].filename)
+                            .replace(/__human_date__/g, images[i].human_date)
+                            .replace(/__date__/g, images[i].date)
+                            .replace(/__json__/g, JSON.stringify(images[i]))
+                        html += item;
                     }
 
                     $photos.append(html);
-                    ds.setSelectables($photos.find(IMAGES_ITEM));
-                },
-                complete: function () {
-                    if ($photos.html() !== '') {
-                        // 由于 justifiedGallery 创建后占高度(无论是否有内容或内容被清空)，导致加载过程中在没有数据的情况下高度被拉开
-                        // 所以需要在重置前销毁，重置数据后重新构建 justifiedGallery
-                        if ($photos.hasClass('reset')) {
-                            $photos.justifiedGallery(gridConfigs).removeClass('reset');
-                        }
-
-                        $photos.justifiedGallery('norewind')
-                        viewer.update();
+                    if (galleryNeedsInit) {
+                        $photos.justifiedGallery(gridConfigs);
+                        galleryNeedsInit = false;
                     } else {
-                        // 没有任何数据时销毁 justifiedGallery
-                        $photos.justifiedGallery('destroy')
+                        $photos.justifiedGallery('norewind');
                     }
-                    $headerTitle.text('我的图片')
                 }
             });
 
+            let galleryNeedsInit = false;
             const resetImages = (params) => {
-                $photos.addClass('reset').html('').justifiedGallery('destroy');
+                try { $photos.justifiedGallery('destroy'); } catch(e) {}
+                $photos.html('');
+                galleryNeedsInit = true;
                 ds.clearSelection();
                 params = $.extend({page: 1}, params)
                 imagesInfinite.refresh(params);
             }
 
-            const getAlbums = (options, callback) => {
-                let title = '__title__ <i class="cursor-pointer fas fa-plus text-blue-500" onclick="$(\'#album-add\').toggleClass(\'hidden\')"></i>'.replace(/__title__/g, (options || {}).title || '我的相册');
-                let content = $('#albums-container-tpl').html();
-                drawer.toggle(title, content, function () {
-                    let $albums = $('#albums-container');
-                    const CREATE_ID = '#album-add';
-                    const UPDATE_ID = '#album-edit';
-                    albumsInfinite = utils.infiniteScroll('#drawer-content', {
-                        url: '{{ route('user.albums') }}',
-                        success: function (response) {
-                            if (!response.status) {
-                                return toastr.error(response.message);
-                            }
+            // 初始化相册列表
+            const initAlbums = () => {
+                const $albumsList = $('#albums-list');
+                const CREATE_ID = '#album-add';
 
-                            let albums = response.data.albums.data;
-                            if (albums.length <= 0 || response.data.albums.current_page === response.data.albums.last_page) {
-                                this.finished = true;
-                            }
-
-                            let html = '';
-                            for (const i in albums) {
-                                let item = $('#albums-item-tpl').html()
-                                    .replace(/__id__/g, albums[i].id)
-                                    .replace(/__name__/g, albums[i].name)
-                                    .replace(/__intro__/g, albums[i].intro)
-                                    .replace(/__image_num__/g, albums[i].image_num)
-                                    .replace(/__json__/g, JSON.stringify(albums[i]))
-                                if (albums[i].id === selectedAlbum.id) {
-                                    // 选中的相册高亮
-                                    item = item
-                                        .replace(/bg-gray-100/g, 'bg-blue-400')
-                                        .replace(/text-gray-800/g, 'text-white')
-                                }
-
-                                html += item;
-                            }
-
-                            $albums.append(html);
-
-                            callback && callback.call(this, $albums.get(0));
+                // 加载相册
+                $.ajax({
+                    url: '{{ route('user.albums') }}',
+                    success: function(response) {
+                        if (!response.status) {
+                            return toastr.error(response.message);
                         }
-                    });
 
-                    $albums.off('click', '>a').on('click', '>a', function () {
-                        // 如果当前已经为选中状态则清除
-                        if (selectedAlbum.id === $(this).data('id')) {
-                            selectedAlbum = {};
-                        } else {
-                            selectedAlbum = $(this).data('json');
+                        let albums = response.data.albums.data;
+                        let html = $('#album-add-tpl').html();
+                        for (const i in albums) {
+                            let item = $('#albums-item-tpl').html()
+                                .replace(/__id__/g, albums[i].id)
+                                .replace(/__name__/g, albums[i].name)
+                                .replace(/__intro__/g, albums[i].intro)
+                                .replace(/__image_num__/g, albums[i].image_num)
+                                .replace(/__json__/g, JSON.stringify(albums[i]))
+                            if (albums[i].id === selectedAlbum.id) {
+                                item = item
+                                    .replace(/bg-gray-100/g, 'bg-blue-400')
+                                    .replace(/text-gray-800/g, 'text-white')
+                            }
+                            html += item;
                         }
-                        resetImages({page: 1, album_id: selectedAlbum.id || null});
-                        drawer.close();
-                        ds.clearSelection();
-                    });
+                        $albumsList.html(html);
 
-                    const resetAlbums = () => {
-                        $albums.find('>a').remove();
-                        $albums.find(CREATE_ID).addClass('hidden');
-                        $albums.find(UPDATE_ID).remove();
-                        albumsInfinite.refresh({page: 1});
+                        // 绑定点击事件
+                        bindAlbumEvents();
                     }
+                });
+            }
 
-                    $albums.off('click', '.update').on('click', '.update', function (e) {
-                        e.stopPropagation();
-                        let selectedId = $albums.find(UPDATE_ID).data('id');
-                        let $item = $(this).closest('a.albums-item');
-                        $albums.find(UPDATE_ID).remove();
-                        if (selectedId !== $item.data('id')) {
-                            $item.after($('#album-update-tpl').html()
-                                .replace(/__id__/g, $item.data('id'))
-                                .replace(/__name__/g, $item.find('>span').html())
-                                .replace(/__intro__/g, $item.attr('title'))
-                            );
+            // 绑定相册事件
+            const bindAlbumEvents = () => {
+                const $albumsList = $('#albums-list');
+                const CREATE_ID = '#album-add';
+                const UPDATE_ID = '#album-edit';
+
+                // 点击相册
+                $albumsList.off('click', '>a.albums-item').on('click', '>a.albums-item', function() {
+                    if (selectedAlbum.id === $(this).data('id')) {
+                        selectedAlbum = {};
+                    } else {
+                        selectedAlbum = $(this).data('json');
+                    }
+                    resetImages({page: 1, album_id: selectedAlbum.id || null});
+                    ds.clearSelection();
+                    // 更新高亮
+                    $albumsList.find('a.albums-item').removeClass('bg-blue-400 text-white').addClass('bg-transparent text-gray-700');
+                    if (selectedAlbum.id) {
+                        $(this).removeClass('bg-transparent text-gray-700').addClass('bg-blue-400 text-white');
+                    }
+                });
+
+                // 编辑相册
+                $albumsList.off('click', '.update').on('click', '.update', function(e) {
+                    e.stopPropagation();
+                    let $item = $(this).closest('a.albums-item');
+                    $albumsList.find(UPDATE_ID).remove();
+                    $item.after($('#album-update-tpl').html()
+                        .replace(/__id__/g, $item.data('id'))
+                        .replace(/__name__/g, $item.find('>span.name').html())
+                        .replace(/__intro__/g, $item.attr('title'))
+                    );
+                });
+
+                // 删除相册
+                $albumsList.off('click', '.delete').on('click', '.delete', function(e) {
+                    e.stopPropagation();
+                    Swal.fire({
+                        title: '确认删除该相册?',
+                        text: "删除后相册中的图片将会被移出。",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: '确认',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            let id = $(this).closest(ALBUM_ITEM).data('id');
+                            axios.delete(`/user/albums/${id}`).then(response => {
+                                if (response.data.status) {
+                                    selectedAlbum = {};
+                                    initAlbums();
+                                    resetImages();
+                                } else {
+                                    toastr.error(response.data.message);
+                                }
+                            });
                         }
                     });
+                });
 
-                    $albums.off('click', '.delete').on('click', '.delete', function (e) {
-                        e.stopPropagation();
-                        Swal.fire({
-                            title: '确认删除该相册?',
-                            text: "删除后相册中的图片将会被移出。",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: '确认',
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                let id = $(this).closest(ALBUM_ITEM).data('id');
-                                axios.delete(`/user/albums/${id}`).then(response => {
-                                    if (response.data.status) {
-                                        selectedAlbum = {};
-                                        resetImages();
-                                        setTimeout(_ => drawer.close(), 300)
-                                    } else {
-                                        toastr.error(response.data.message);
-                                    }
-                                });
-                            }
-                        })
+                // 创建相册
+                $albumsList.off('submit', CREATE_ID + ' form').on('submit', CREATE_ID + ' form', function(e) {
+                    e.preventDefault();
+                    let $form = $(this);
+                    axios.post($form.attr('action'), $form.serialize()).then(response => {
+                        let $errorMessage = $albumsList.find(CREATE_ID + ' .error-message').html('').hide();
+                        if (response.data.status) {
+                            $form.get(0).reset();
+                            initAlbums();
+                        } else {
+                            $errorMessage.html('<i class="fas fa-exclamation-circle"></i> ' + response.data.message).show();
+                        }
                     });
+                });
 
-                    // confirm create
-                    $albums.off('submit', CREATE_ID + ' form').on('submit', CREATE_ID + ' form', function (e) {
-                        e.preventDefault();
-                        let $form = $(this);
-                        axios.post($form.attr('action'), $form.serialize()).then(response => {
-                            let $errorMessage = $albums.find(CREATE_ID + ' .error-message').html('').hide();
-                            if (response.data.status) {
-                                $form.get(0).reset();
-                                resetAlbums()
-                            } else {
-                                $errorMessage.html('<i class="fas fa-exclamation-circle"></i> ' + response.data.message).show();
-                            }
-                        });
-                    });
-
-                    // confirm update
-                    $albums.off('submit', UPDATE_ID + ' form').on('submit', UPDATE_ID + ' form', function (e) {
-                        e.preventDefault();
-                        let $form = $(this);
-                        axios.put($form.attr('action'), $form.serialize()).then(response => {
-                            let $errorMessage = $albums.find(UPDATE_ID + ' .error-message').html('').hide();
-                            if (response.data.status) {
-                                let $editContainer = $(this).closest(UPDATE_ID);
-                                $albums.find(`>a[data-id=${$editContainer.data('id')}]`)
-                                    .attr('title', $form.find('textarea').val())
-                                    .find('.name').text($form.find('input').val());
-                                $editContainer.remove();
-                            } else {
-                                $errorMessage.html('<i class="fas fa-exclamation-circle"></i> ' + response.data.message).show();
-                            }
-                        });
+                // 更新相册
+                $albumsList.off('submit', UPDATE_ID + ' form').on('submit', UPDATE_ID + ' form', function(e) {
+                    e.preventDefault();
+                    let $form = $(this);
+                    let $editContainer = $(this).closest(UPDATE_ID);
+                    axios.put($form.attr('action'), $form.serialize()).then(response => {
+                        let $errorMessage = $albumsList.find(UPDATE_ID + ' .error-message').html('').hide();
+                        if (response.data.status) {
+                            $albumsList.find(`>a[data-id=${$editContainer.data('id')}]`)
+                                .attr('title', $form.find('textarea').val())
+                                .find('.name').text($form.find('input').val());
+                            $editContainer.remove();
+                        } else {
+                            $errorMessage.html('<i class="fas fa-exclamation-circle"></i> ' + response.data.message).show();
+                        }
                     });
                 });
             }
+
+            // 页面加载时初始化相册
+            initAlbums();
 
             const setOrderBy = function (sort) {
                 resetImages({page: 1, order: sort})
@@ -497,344 +500,26 @@
                 $(operates.map(item => `[data-operate=${item}]`).toString()).css('display', 'block');
             };
 
-            ds.subscribe('predragstart', ({ event }) => {
-                if (utils.isMobile()) {
-                    ds.stop();
+            ds.addSelectionCallback(bindOperates);
+            ds.addCallback((items) => {
+                if (!items.length) {
+                    $headerTitle.text('我的图片');
                 }
-
-                if (! $(event.target).hasClass('dragselect')) {
-                    ds.break();
-                }
-            });
-            ds.subscribe('elementselect', _ => bindOperates());
-            ds.subscribe('elementunselect', _ => bindOperates());
-
-            $photos.on('click', '.image-selector', function () {
-                ds.toggleSelection($(this).closest('a'));
-                bindOperates();
-            })
-        </script>
-        <script>
-            context.init({
-                fadeSpeed: 100,
-                filter: function ($obj) {},
-                above: 'auto',
-                preventDoubleContext: true,
-                compress: false
             });
 
-            new ClipboardJS('.dropdown-menu li a.copy', {
-                text: function(trigger) {
-                    return $(trigger).data('copy-value');
-                }
-            }).on('success', _ => {
-                toastr.success('复制成功');
-            }).on('error', _ => {
-                toastr.warning('复制失败')
-            });
-
-            const methods = {
-                movements() {
-                    getAlbums({title: '选择相册'}, e => {
-                        let selected = ds.getSelection().map(item => $(item).data('id'));
-                        $headerTitle.text(`移动 ${selected.length} 张图片至...`)
-                        $(e).off('click', '>a').on('click', '>a', function () {
-                            axios.put('{{ route('user.images.movement') }}', {
-                                selected: selected,
-                                id: $(this).data('id'),
-                                album_id: selectedAlbum.id || 0,
-                            }).then(response => {
-                                if (response.data.status) {
-                                    drawer.close();
-                                    resetImages();
-                                    toastr.success(response.data.message);
-                                } else {
-                                    toastr.warning(response.data.message);
-                                }
-                            })
-                        });
-                    });
-                },
-                remove() {
-                    let selected = ds.getSelection().map(item => $(item).data('id'));
-                    $headerTitle.text(`移出 ${selected.length} 张图片`)
-                    axios.put('{{ route('user.images.movement') }}', {
-                        selected: selected,
-                        album_id: selectedAlbum.id || null, // 原相册ID
-                        id: null,
-                    }).then(response => {
-                        if (response.data.status) {
-                            drawer.close();
-                            resetImages();
-                            toastr.success(response.data.message);
-                        } else {
-                            toastr.warning(response.data.message);
-                        }
-                    });
-                },
-                permission() {
-                    Swal.fire({
-                        title: '选择一个权限',
-                        text: '选择公开将会出现在画廊中(若平台开启了画廊)',
-                        input: 'select',
-                        inputOptions: {
-                            public: '公开',
-                            private: '私有',
-                        },
-                        confirmButtonText: '确认设置',
-                        inputPlaceholder: '请选择一个权限',
-                        showCancelButton: true,
-                        inputValidator: (value) => {
-                            return new Promise((resolve) => {
-                                if (value === '') {
-                                    resolve('请选择正确的权限')
-                                } else {
-                                    resolve();
-                                }
-                            })
-                        }
-                    }).then(result => {
-                        if (result.isConfirmed) {
-                            let selected = ds.getSelection().map(item => $(item).data('id'));
-                            axios.put('{{ route('user.images.permission') }}', {
-                                ids: selected,
-                                permission: result.value,
-                            }).then(response => {
-                                if (response.data.status) {
-                                    ds.clearSelection();
-                                    toastr.success(response.data.message);
-                                } else {
-                                    toastr.warning(response.data.message);
-                                }
-                            });
-                        }
-                    });
-                },
-                rename(e) {
-                    let item = $(e).data('json');
-                    Swal.fire({
-                        title: '请输入图片名称',
-                        input: 'text',
-                        inputValue: item.filename,
-                        inputAttributes: {
-                            autocapitalize: 'off'
-                        },
-                        showCancelButton: true,
-                        confirmButtonText: '确认',
-                        showLoaderOnConfirm: true,
-                        preConfirm: (value) => {
-                            return axios.put('{{ route('user.images.rename') }}', {
-                                id: item.id,
-                                name: value,
-                            }).then(response => {
-                                if (! response.data.status) {
-                                    throw new Error(response.data.message)
-                                }
-                                return response.data;
-                            }).catch(error => Swal.showValidationMessage('服务异常，请稍后重试。'));
-                        },
-                        allowOutsideClick: () => !Swal.isLoading()
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            if (result.value.status) {
-                                $(e).find('p.filename').attr('title', result.value.data.filename).text(result.value.data.filename)
-                                item.filename = result.value.data.filename;
-                                $(e).data('json', item);
-                                toastr.success(result.value.message);
-                            } else {
-                                toastr.error(result.value.message);
-                            }
-                        }
-                    })
-                },
-                delete() {
-                    Swal.fire({
-                        title: '确认要删除选中的图片？',
-                        text: "删除后不可恢复，记录和文件同时删除",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: '确认删除',
-                        cancelButtonText: '取消',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            let selected = ds.getSelection().map(item => $(item).data('id'));
-                            axios.delete('{{ route('user.images.delete') }}', {
-                                data: selected,
-                            }).then(response => {
-                                if (response.data.status) {
-                                    let size = 0;
-                                    ds.getSelection().map(item => {
-                                        size += $(item).data('json').size;
-                                        $(item).remove();
-                                    });
-                                    utils.setCapacityProgress(-size);
-                                    $headerTitle.text('我的图片');
-                                    $photos.justifiedGallery(gridConfigs).removeClass('reset');
-                                    toastr.success(response.data.message);
-                                } else {
-                                    toastr.warning(response.data.message);
-                                }
-                            });
-                        }
-                    });
-                },
-                detail(e) {
-                    let item = $(e).data('json');
-                    axios.get(`/user/images/${item.id}`).then(response => {
-                        if (response.data.status) {
-                            let image = response.data.data.image;
-                            let content = $('#image-detail-tpl').html()
-                                .replace(/__album_name__/g, image.album ? image.album.name : '-')
-                                .replace(/__strategy_name__/g, image.strategy ? image.strategy.name : '-')
-                                .replace(/__filename__/g, image.filename.replace(/\$/g, '$$$$'))
-                                .replace(/__origin_name__/g, image.origin_name.replace(/\$/g, '$$$$'))
-                                .replace(/__size__/g, utils.formatSize(image.size * 1024))
-                                .replace(/__mimetype__/g, image.mimetype)
-                                .replace(/__width__/g, image.width)
-                                .replace(/__height__/g, image.height)
-                                .replace(/__md5__/g, image.md5)
-                                .replace(/__sha1__/g, image.sha1)
-                                .replace(/__permission__/g, image.permission === 1 ? '公开' : '私有')
-                                .replace(/__uploaded_ip__/g, image.uploaded_ip)
-                                .replace(/__created_at__/g, image.created_at)
-                            drawer.open(item.filename, content);
-                        } else {
-                            toastr.error(response.data.message);
-                        }
-                    })
-                }
-            };
-            // right click actions
-            const actions = {
-                copy: {
-                    text: '复制图片',
-                    action: e => {
-                        let src = $(e).find('img').attr('src');
-                        CopyImageClipboard.copyImageToClipboard(src).then(() => {
-                            toastr.success('复制成功')
-                        }).catch(e => {
-                            toastr.warning('复制失败, ' + e.message)
-                        });
-                    },
-                    visible: () => ds.getSelection().length === 1,
-                },
-                refresh: {text: '刷新', action: _ => resetImages()},
-                rename: {
-                    text: '重命名',
-                    visible: () => ds.getSelection().length === 1,
-                    action: e => methods.rename(e),
-                },
-                open: {
-                    text: '新窗口打开',
-                    action: e => window.open($(e).data('json').url),
-                    visible: () => ds.getSelection().length === 1,
-                },
-                copies: {
-                    text: '复制链接',
-                    subMenu: [
-                        {
-                            text: 'Url',
-                            classes: ['copy'],
-                            attributes: {"data-link-type": "url"},
-                        },
-                        {
-                            text: 'Html',
-                            classes: ['copy'],
-                            attributes: {"data-link-type": "html"},
-                        },
-                        {
-                            text: 'BBCode',
-                            classes: ['copy'],
-                            attributes: {"data-link-type": "bbcode"},
-                        },
-                        {
-                            text: 'Markdown',
-                            classes: ['copy'],
-                            attributes: {"data-link-type": "markdown"},
-                        },
-                        {
-                            text: 'Markdown with link',
-                            classes: ['copy'],
-                            attributes: {"data-link-type": "markdown_with_link"},
-                        },
-                        {
-                            text: 'Thumbnail url',
-                            classes: ['copy'],
-                            attributes: {"data-link-type": "thumbnail_url"},
-                        },
-                    ],
-                    visible: () => ds.getSelection().length === 1,
-                },
-                movements: {
-                    text: '移动到相册',
-                    action: _ => methods.movements(),
-                },
-                remove: {
-                    text: '移出当前相册',
-                    action: _ => methods.remove(),
-                    visible: _ => selectedAlbum.id !== undefined,
-                },
-                detail: {
-                    text: '详细信息',
-                    visible: () => ds.getSelection().length === 1,
-                    action: e => methods.detail(e)
-                },
-                delete: {
-                    text: '删除',
-                    action: _ => methods.delete(),
-                },
-                permission: {
-                    text: '设置权限',
-                    action: _ => methods.permission(),
-                },
-            };
-            // right click 'images scroll' container
-            context.attach(IMAGES_SCROLL, {
-                data: [actions.refresh],
-                beforeOpen: () => ds.clearSelection(),
-            });
-            // right click image
-            context.attach(IMAGES_ITEM, {
-                data: [
-                    {header: '图片操作'},
-                    actions.refresh,
-                    actions.copy,
-                    actions.copies,
-                    actions.open,
-                    actions.movements,
-                    actions.remove,
-                    actions.permission,
-                    actions.detail,
-                    {divider: true},
-                    actions.rename,
-                    actions.delete,
-                ],
-                beforeOpen: function (item) {
-                    // 选中当前项目
-                    if (ds.getSelection().length <= 1) ds.clearSelection();
-                    ds.addSelection($(item));
-                },
-                afterOpen: function (item, dropdown) {
-                    let data = $(item).data('json');
-                    // 追加链接
-                    $(dropdown).find('a.copy').each(function () {
-                        $(this).data('copy-value', data.links[$(this).data('link-type')])
-                    });
-                }
-            });
-            // the operates functions
-            $('[data-operate]').click(function () {
+            $('[data-operate]').on('click', function () {
                 let operate = $(this).data('operate');
                 let selected = ds.getSelection();
+                if (operate === 'refresh') {
+                    resetImages();
+                    return false;
+                }
 
-                if (selected.length === 0) {
+                if (!selected.length && operate !== 'refresh') {
                     return false;
                 }
 
                 switch (operate) {
-                    case 'refresh': // 刷新
-                        resetImages();
-                        break;
                     case 'movements': // 移动到相册
                         methods.movements();
                         break;
@@ -844,7 +529,7 @@
                     case 'rename': // 重命名
                         methods.rename(selected[0]);
                         break;
-                    case 'permission': // 设置权限
+                    case 'permission':
                         methods.permission();
                         break;
                     case 'detail':
@@ -855,6 +540,171 @@
                         break;
                 }
             });
+        </script>
+        <script>
+            let selectedAlbum = {};
+            const methods = {
+                movements() {
+                    let selected = ds.getSelection();
+                    const content = $('#albums-container-tpl').html();
+                    drawer.toggle('移动到相册', content, function () {
+                        let $albums = $('#albums-container');
+                        const CREATE_ID = '#album-add';
+                        albumsInfinite = utils.infiniteScroll('#drawer-content', {
+                            url: '{{ route('user.albums') }}',
+                            success: function (response) {
+                                if (!response.status) {
+                                    return toastr.error(response.message);
+                                }
+
+                                let albums = response.data.albums.data;
+                                if (albums.length <= 0 || response.data.albums.current_page === response.data.albums.last_page) {
+                                    this.finished = true;
+                                }
+
+                                let html = '';
+                                for (const i in albums) {
+                                    let item = $('#albums-item-tpl').html()
+                                        .replace(/__id__/g, albums[i].id)
+                                        .replace(/__name__/g, albums[i].name)
+                                        .replace(/__intro__/g, albums[i].intro)
+                                        .replace(/__image_num__/g, albums[i].image_num)
+                                        .replace(/__json__/g, JSON.stringify(albums[i]))
+                                    html += item;
+                                }
+
+                                $albums.append(html);
+
+                                callback && callback.call(this, $albums.get(0));
+                            }
+                        });
+
+                        $albums.off('click', '>a').on('click', '>a', function () {
+                            let id = $(this).data('id');
+                            let ids = [];
+                            selected.forEach(item => ids.push($(item).data('id')));
+                            axios.put('{{ route('user.images.movement') }}', {
+                                selected: ids,
+                                id: id
+                            }).then(response => {
+                                if (response.data.status) {
+                                    toastr.success('移动成功');
+                                    resetImages();
+                                    setTimeout(_ => drawer.close(), 300)
+                                } else {
+                                    toastr.error(response.data.message);
+                                }
+                            });
+                        });
+                    });
+                },
+                remove() {
+                    let selected = ds.getSelection();
+                    let ids = [];
+                    selected.forEach(item => ids.push($(item).data('id')));
+                    axios.put('{{ route('user.images.movement') }}', {
+                        selected: ids,
+                        id: 0
+                    }).then(response => {
+                        if (response.data.status) {
+                            toastr.success('移出成功');
+                            resetImages();
+                        } else {
+                            toastr.error(response.data.message);
+                        }
+                    });
+                },
+                rename(image) {
+                    let $image = $(image);
+                    Swal.fire({
+                        title: '请输入新的名称',
+                        input: 'text',
+                        inputValue: $image.find('.filename').text(),
+                        showCancelButton: true,
+                        confirmButtonText: '确认',
+                        cancelButtonText: '取消',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            axios.put('{{ route('user.images.rename') }}', {
+                                id: $image.data('id'),
+                                name: result.value
+                            }).then(response => {
+                                if (response.data.status) {
+                                    toastr.success('修改成功');
+                                    $image.find('.filename').text(result.value);
+                                    let json = $image.data('json');
+                                    json.filename = result.value;
+                                    $image.data('json', json);
+                                } else {
+                                    toastr.error(response.data.message);
+                                }
+                            });
+                        }
+                    });
+                },
+                permission() {
+                    let selected = ds.getSelection();
+                    let ids = [];
+                    selected.forEach(item => ids.push($(item).data('id')));
+                    let permission = selected.eq(0).data('json').permission === 0 ? 1 : 0;
+                    axios.put('{{ route('user.images.permission') }}', {
+                        selected: ids,
+                        id: permission
+                    }).then(response => {
+                        if (response.data.status) {
+                            toastr.success('修改成功');
+                            resetImages();
+                        } else {
+                            toastr.error(response.data.message);
+                        }
+                    });
+                },
+                detail(image) {
+                    let data = $(image).data('json');
+                    let content = $('#image-detail-tpl').html()
+                        .replace(/__album_name__/g, data.album_name || '未分组')
+                        .replace(/__strategy_name__/g, data.strategy_name)
+                        .replace(/__filename__/g, data.filename)
+                        .replace(/__url__/g, data.url)
+                        .replace(/__thumb_url__/g, data.thumb_url)
+                        .replace(/__markdown__/g, `![${data.filename}](${data.url})`)
+                        .replace(/__html__/g, `<img src="${data.url}" alt="${data.filename}">`)
+                        .replace(/__bbcode__/g, `[img]${data.url}[/img]`)
+                        .replace(/__width__/g, data.width)
+                        .replace(/__height__/g, data.height)
+                        .replace(/__size__/g, (data.size / 1024).toFixed(2) + ' KB')
+                        .replace(/__date__/g, data.date);
+                    drawer.toggle('图片详情', content);
+                },
+                delete() {
+                    let selected = ds.getSelection();
+                    let ids = [];
+                    selected.forEach(item => ids.push($(item).data('id')));
+                    Swal.fire({
+                        title: '确认删除选中的图片?',
+                        text: "删除后将无法恢复！",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: '确认',
+                        cancelButtonText: '取消',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            axios.delete('{{ route('user.images.delete') }}', {
+                                data: {selected: ids}
+                            }).then(response => {
+                                if (response.data.status) {
+                                    toastr.success('删除成功');
+                                    resetImages();
+                                } else {
+                                    toastr.error(response.data.message);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
         </script>
     @endpush
 </x-app-layout>

@@ -15,8 +15,9 @@ class AlbumController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $albums = $user->albums()->filter($request)->paginate(40);
+        $albums = $user->albums()->withCount('images')->filter($request)->paginate(40);
         $albums->getCollection()->each(function (Album $album) {
+            $album->image_num = $album->images_count;
             $album->setVisible(['id', 'name', 'intro', 'image_num']);
         });
         return $this->success('success', $albums);
