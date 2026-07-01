@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="flex space-x-2 items-center">
-            <input type="text" id="search" class="px-2.5 py-1.5 border-0 outline-none rounded bg-gray-100 text-sm transition-all duration-300 hidden md:block md:w-36 md:hover:w-52 md:focus:w-52" placeholder="输入关键字搜索...">
+            <input type="text" id="search" class="px-3 py-2 border border-gray-300 outline-none rounded-lg bg-white text-sm transition-all duration-300 w-52 focus:w-72 focus:border-blue-400 focus:shadow-sm placeholder:text-gray-400" placeholder="🔍 搜索文件名或图片文字...">
             <x-dropdown direction="left">
                 <x-slot name="trigger">
                     <a id="order" class="text-sm py-2 px-3 hover:bg-gray-100 rounded text-gray-800" href="javascript:void(0)">
