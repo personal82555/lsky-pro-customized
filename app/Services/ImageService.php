@@ -273,6 +273,16 @@ class ImageService
         // 生成缩略图
         $this->makeThumbnail($image, $file);
 
+        // OCR: 识别图片文字（仅支持常见图片格式）
+        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'])) {
+            try {
+                $ocrService = new OcrService();
+                $ocrService->processImage($image);
+            } catch (\Throwable $e) {
+                Log::warning('OCR processing failed', ['image_id' => $image->id, 'error' => $e->getMessage()]);
+            }
+        }
+
         return $image;
     }
 

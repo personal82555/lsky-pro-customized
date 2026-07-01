@@ -70,6 +70,7 @@ class Image extends Model
         'permission',
         'is_unhealthy',
         'uploaded_ip',
+        'ocr_text',
     ];
 
     protected $hidden = [
@@ -150,7 +151,11 @@ class Image extends Model
                     break;
             }
         })->when($request->query('keyword'), function (Builder $builder, $keyword) {
-            $builder->where('origin_name', 'like', "%{$keyword}%")->orWhere('alias_name', 'like', "%{$keyword}%");
+            $builder->where(function ($q) use ($keyword) {
+                    $q->where('origin_name', 'like', "%{$keyword}%")
+                      ->orWhere('alias_name', 'like', "%{$keyword}%")
+                      ->orWhere('ocr_text', 'like', "%{$keyword}%");
+                });
         })->when((int) $request->query('album_id'), function (Builder $builder, $albumId) {
             $builder->where('album_id', $albumId);
         });
