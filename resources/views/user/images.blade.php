@@ -270,7 +270,7 @@
                 }
             }
 
-            $photos.justifiedGallery(gridConfigs);
+            // Gallery will be initialized on first image load via galleryNeedsInit
 
             let albumsInfinite = null;
             const imagesInfinite = utils.infiniteScroll(IMAGES_SCROLL, {
@@ -315,7 +315,7 @@
                 }
             });
 
-            let galleryNeedsInit = false;
+            let galleryNeedsInit = true;
             const resetImages = (params) => {
                 try { $photos.justifiedGallery('destroy'); } catch(e) {}
                 $photos.html('');
