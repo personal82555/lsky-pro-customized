@@ -262,16 +262,6 @@ class DirectoryImportController extends Controller
                     }
                 });
 
-                // 生成缩略图（跳过 ico 和 gif）
-                if (!in_array($extension, ['ico', 'gif'])) {
-                    try {
-                        $imageService = new \App\Services\ImageService();
-                        $imageService->makeThumbnail($image, $realPath, 400, true);
-                    } catch (\Throwable $e) {
-                        Utils::e($e, '生成缩略图失败');
-                    }
-                }
-
                 $results['success']++;
             } catch (\Throwable $e) {
                 Utils::e($e, '目录导入图片时出现异常');
