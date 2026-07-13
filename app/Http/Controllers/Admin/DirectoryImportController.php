@@ -262,6 +262,17 @@ class DirectoryImportController extends Controller
                     }
                 });
 
+                // 生成缩略图（跳过 ico 和 gif）
+                if (!in_array($extension, ['ico', 'gif'])) {
+                    try {
+                        @ini_set('memory_limit', '512M');
+                        $imageService = new \App\Services\ImageService();
+                        $imageService->makeThumbnail($image, $realPath, 400, true);
+                    } catch (\Throwable $e) {
+                        // 缩略图生成失败不中断导入
+                    }
+                }
+
                 $results['success']++;
             } catch (\Throwable $e) {
                 Utils::e($e, '目录导入图片时出现异常');
